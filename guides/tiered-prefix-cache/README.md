@@ -21,6 +21,7 @@ Each path is a self-contained deployment using a specific offloading implementat
 | **LMCache** | [LMCache](https://lmcache.ai) connector | CPU RAM, Filesystem | `modelserver/gpu/vllm/lmcache-connector/` |
 | **SGLang HiCache** | SGLang native HiCache | CPU RAM | `modelserver/gpu/sglang/native/cpu/` |
 | **TPU** | vLLM TPU KVCache connector | CPU RAM | `modelserver/tpu/v6/vllm/native/cpu/`, `modelserver/tpu/v7/vllm/native/cpu/` |
+| **Intel XPU** | vLLM `OffloadingConnector` | CPU RAM | `modelserver/xpu/vllm/native/cpu/` |
 
 We recommend each model server's **native** offloading path: the `OffloadingConnector` on vLLM, and HiCache — its equivalent — on SGLang. Native offloading is low-overhead, requires no extra components, and enabling the CPU tier is appropriate in almost all deployments. Reach for a non-native connector (for example LMCache) only when you need a capability the native path does not yet provide.
 
@@ -46,6 +47,15 @@ The tiers each path supports differ — see the table above. For example, the vL
 | TPU Accelerator         | TPU v7                                                  |
 | HBM Staging Buffer Size | 1000 Blocks (~34 GB)                                    |
 | CPU Cache Offload Size  | 25000 Chunks (~780 GB)                                  |
+
+### XPU
+
+| Parameter              | Value                                                 |
+| ---------------------- | ----------------------------------------------------- |
+| Model                  | [Qwen/Qwen3-8B](https://huggingface.co/Qwen/Qwen3-8B) |
+| XPUs per replica (TP)  | 1                                                     |
+| XPU Accelerator        | Intel B60                                             |
+| CPU Cache Offload Size | 20 GB                                                 |
 
 > [!NOTE]
 > A `gpt-oss-120b` variant (TP=1 on NVIDIA H100, 100 GB CPU offload) is also benchmarked — see [gpt-oss-120B benchmarking results](./benchmark-results/vllm-gpt-oss-120b-h100.md).
@@ -188,6 +198,23 @@ export TPU_VERSION=v7  # v6 | v7
 kubectl apply -n ${NAMESPACE} -k ${REPO_ROOT}/guides/tiered-prefix-cache/modelserver/tpu/${TPU_VERSION}/vllm/native/cpu/
 ```
 
+#### Intel XPU — vLLM native CPU RAM
+
+This path uses vLLM's native `OffloadingConnector` to offload evicted KV blocks to CPU RAM on Intel XPU.
+
+> [!IMPORTANT]
+> XPU `OffloadingConnector` support is newer than the latest published `ghcr.io/llm-d/llm-d-xpu` image. Until a released image ships with it, build the vLLM XPU image locally and override the reference in [`modelserver/xpu/vllm/base/kustomization.yaml`](./modelserver/xpu/vllm/base/kustomization.yaml) (the `images:` entry — replace `newName`/`newTag` with your local image and tag).
+
+```bash
+kubectl apply -n ${NAMESPACE} -k ${REPO_ROOT}/guides/tiered-prefix-cache/modelserver/xpu/vllm/native/cpu/base/
+```
+
+To deploy the HBM-only baseline (no CPU offloading) for comparison, apply the `base` overlay directly:
+
+```bash
+kubectl apply -n ${NAMESPACE} -k ${REPO_ROOT}/guides/tiered-prefix-cache/modelserver/xpu/vllm/base/
+```
+
 #### Storage Backends
 
 The filesystem tier works with any storage system that exposes a ReadWriteMany PVC over standard POSIX file access. The following backends have setup guides; others (for example CephFS) work through the same PVC mechanism.
@@ -312,6 +339,13 @@ export TPU_VERSION=v7  # v6 | v7
 kubectl delete -n ${NAMESPACE} -k ${REPO_ROOT}/guides/tiered-prefix-cache/modelserver/tpu/${TPU_VERSION}/vllm/native/cpu --ignore-not-found
 ```
 
+**Intel XPU path:**
+
+```bash
+# native/cpu/base = offloading; base = HBM-only baseline
+kubectl delete -n ${NAMESPACE} -k ${REPO_ROOT}/guides/tiered-prefix-cache/modelserver/xpu/vllm/native/cpu/base --ignore-not-found
+```
+
 ```bash
 kubectl delete -f ${REPO_ROOT}/guides/tiered-prefix-cache/manifests/pvc.yaml -n ${NAMESPACE} --ignore-not-found  # if a PVC was created
 kubectl delete namespace ${NAMESPACE}
@@ -409,4 +443,5 @@ Empirical benchmark reports demonstrating the impact of multi-tier prefix-cache 
 - **[openai/gpt-oss-120b on vLLM (16×H100 CPU Offload)](./benchmark-results/vllm-gpt-oss-120b-h100.md)**: Stage-by-stage throughput, latency, TPOT, and fleet cache hit rate breakdowns across 5–40 QPS.
 - **[Qwen/Qwen3-32B on vLLM (TPU v6e/v7 CPU Offload)](./benchmark-results/vllm-qwen3-32b-tpuv7.md)**: Headline throughput and latency effect of CPU RAM prefix offloading on Google TPU architectures.
 - **[Qwen/Qwen3-32B on vLLM (16×H100 Lustre Offload)](./benchmark-results/vllm-qwen3-32b-h100-lustre.md)**: Benchmark comparisons for shared POSIX filesystem offloading using LMCache and llm-d filesystem connectors.
+- **[Qwen/Qwen3-8B on vLLM (Intel B60 XPU CPU Offload)](./benchmark-results/vllm-qwen3-8b-b60-xpu.md)**: TTFT, end-to-end latency, and throughput gains from CPU RAM offloading on a single Intel B60 XPU under high cache pressure.
 

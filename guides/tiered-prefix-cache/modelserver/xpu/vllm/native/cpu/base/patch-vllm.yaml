@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: decode
+spec:
+  template:
+    spec:
+      containers:
+        - name: modelserver
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              exec vllm serve \
+                Qwen/Qwen3-8B \
+                --dtype bfloat16 \
+                --block-size 64 \
+                --tensor-parallel-size=1 \
+                --kv-transfer-config \
+                '{"kv_connector":"OffloadingConnector","kv_role":"kv_both","kv_connector_extra_config":{"cpu_bytes_to_use":21474836480}}' \
+                --gpu-memory-utilization 0.35 \
+                --max-num-seq 128 \
+                --uvicorn-log-level warning
+          env:
+            - name: HF_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: llm-d-hf-token
+                  key: HF_TOKEN
