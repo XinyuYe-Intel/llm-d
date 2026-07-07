@@ -1,0 +1,21 @@
+apiVersion: resource.k8s.io/v1
+kind: ResourceClaimTemplate
+metadata:
+  name: tiered-prefix-cache-intel-claim-template-decode
+spec:
+  spec:
+    devices:
+      requests:
+        # Single-replica LMCache run: pin the 4 claimed GPUs to the socket-0
+        # cards (XPU 0-3 = PCI 2b/2f/3c/40, pciRoot 26/37) so this run always
+        # lands on the same NUMA-local quad regardless of scheduling order.
+        - name: gpu
+          exactly:
+            deviceClassName: gpu.intel.com
+            allocationMode: ExactCount
+            count: 4
+            selectors:
+              - cel:
+                  expression: >-
+                    device.attributes["gpu.intel.com"].pciAddress in
+                    ["0000:2b:00.0","0000:2f:00.0","0000:3c:00.0","0000:40:00.0"]

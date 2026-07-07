@@ -1,0 +1,67 @@
+# Intel B60 XPU shared-prefix workload -- SINGLE-ENGINE variant.
+#
+# Topology: Qwen3-32B, TP4 x 1 replica on 4 B60s (one engine claims 4 GPUs via
+# DRA, ZE_AFFINITY_MASK 0-3). Used for single-replica variants (e.g. the LMCache
+# connector run) where there is exactly one serving engine, so the rates below
+# ARE the per-engine rates.
+#
+# Drives enough distinct prefixes that the engine's KV working set exceeds its
+# VRAM, so the VRAM-only baseline must evict/recompute while the CPU-offload
+# connector (OffloadingConnector or LMCache) keeps the prefixes resident in host
+# RAM.
+#
+# Sizing rationale -- KV is 256 KiB/token for the full model (64 layers x 2 (K,V)
+# x 8 KV heads x 128 head_dim x 2 bytes bf16). TP4 shards the 8 KV heads to 2
+# per GPU. Per engine (measured from vLLM): 4.14 GiB/GPU KV -> 67,584 tokens
+# ("GPU KV cache size"). 60 groups x 3000 = 180K prefix tokens, ~2.7x the 67.5K-
+# token per-engine VRAM budget, so the VRAM-only baseline must evict/RECOMPUTE
+# on a miss (high TTFT) while the 100 GiB CPU KV buffer holds the full working
+# set (low TTFT). The benefit shows up as latency/throughput, NOT failures.
+# The opening qps 1 stage is a warmup that primes the prefix cache before the
+# measured 2/3/4 ramp.
+#
+# This file is a source of truth; run-xpu-benchmark.sh copies it into the
+# benchmark profiles dir (workload/profiles/inference-perf/) as a .yaml.in
+# template so the REPLACE_ENV_* tokens below are substituted with the runtime
+# endpoint URL and model name at render time.
+load:
+  type: poisson
+  interval: 60.0
+  # NOTE: On the 4x B60 (xe driver) the Qwen3-32B TP4 + LMCache-offload engine
+  # hits a compute-engine (CCS) TDR / oneCCL allreduce hang (dmesg "Engine
+  # reset: engine_class=ccs" across all 4 ranks -> UR_RESULT_ERROR_DEVICE_LOST)
+  # once sustained concurrency + KV-offload traffic crosses a threshold (seen at
+  # ~90s into the old 1->2->3->4 ramp). We keep the offered load gentle so the
+  # engine stays stable (100% success). The offload BENEFIT still shows because
+  # the working set (60 groups x 3000 = 180K prefix tokens) far exceeds the
+  # 67.5K-token VRAM budget regardless of rate -- the gain is TTFT/latency.
+  stages:
+    - { rate: 0.5, duration: 120 }
+    - { rate: 1.0, duration: 240 }
+api:
+  type: completion
+  streaming: true
+server:
+  type: vllm
+  model_name: REPLACE_ENV_LLMDBENCH_DEPLOY_CURRENT_MODEL
+  base_url: REPLACE_ENV_LLMDBENCH_HARNESS_STACK_ENDPOINT_URL
+  ignore_eos: true
+tokenizer:
+  pretrained_model_name_or_path: REPLACE_ENV_LLMDBENCH_DEPLOY_CURRENT_MODEL
+data:
+  type: shared_prefix
+  shared_prefix:
+    num_groups: 60              # 60 distinct system-prompt prefixes (single engine)
+    num_prompts_per_group: 5    # 5 unique questions per prefix
+    system_prompt_len: 3000     # 3K-token shared prefix per group
+    question_len: 256           # per-prompt question length
+    output_len: 256             # per-prompt generated length
+    enable_multi_turn_chat: false
+report:
+  request_lifecycle:
+    summary: true
+    per_stage: true
+    per_request: true
+storage:
+  local_storage:
+    path: /workspace

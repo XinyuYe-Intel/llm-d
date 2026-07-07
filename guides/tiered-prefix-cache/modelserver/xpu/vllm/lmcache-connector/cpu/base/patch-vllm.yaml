@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: decode
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+        - name: modelserver
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              source /opt/intel/oneapi/setvars.sh >/dev/null 2>&1 || true
+              # XPU FIX: LMCache's local CPU backend allocates the whole host tier
+              # as SYCL USM pinned memory (torch.empty(pin_memory=True)). On XPU an
+              # oversized host USM allocation segfaults inside fill_ WITHOUT raising a
+              # Python error, so LMCache's RuntimeError fallback never triggers and the
+              # worker dies during KV-cache registration. Force pageable host memory on
+              # XPU (pinning only speeds up DMA; pageable is functionally correct).
+              # Locate python_ops_fallback.py via importlib so the patch is path-agnostic.
+              # python - <<'PYEOF'
+              # import importlib.util
+              # spec = importlib.util.find_spec("lmcache.python_ops_fallback")
+              # p = spec.origin
+              # s = open(p).read()
+              # old = '        _use_pinned = torch_dev.is_available()\n'
+              # new = '        _use_pinned = torch_dev.is_available() and torch_device_type != "xpu"\n'
+              # if new in s:
+              #     print("LMCache XPU pin patch: already applied ->", p)
+              # elif old in s:
+              #     open(p, "w").write(s.replace(old, new, 1))
+              #     print("LMCache XPU pin patch: applied ->", p)
+              # else:
+              #     print("LMCache XPU pin patch: pattern NOT FOUND ->", p)
+              # PYEOF
+              exec vllm serve \
+                /localdisk/HF_CACHE/Qwen3-32B \
+                --served-model-name Qwen/Qwen3-32B \
+                --dtype bfloat16 \
+                --block-size 64 \
+                --tensor-parallel-size=4 \
+                --gpu-memory-utilization 0.85 \
+                --kv-transfer-config \
+                '{"kv_connector":"LMCacheConnectorV1","kv_role":"kv_both"}' \
+                --max-num-seq 128 \
+                --uvicorn-log-level warning
+          env:
+            - name: ZE_AFFINITY_MASK
+              value: "0,1,2,3"
+            - name: HF_HOME
+              value: /localdisk/HF_CACHE
+            - name: HF_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: llm-d-hf-token
+                  key: HF_TOKEN
+            # LMCache CPU RAM tier, in GB and PER TP WORKER. LMCache instantiates
+            # one LMCacheEngine per TP rank and each rank eagerly allocates this
+            # many GB of host RAM, so the pod total is value x tensor-parallel-size.
+            # With TP4 we use 25 GB/worker => 100 GB aggregate, matching the native
+            # OffloadingConnector's 100 GiB total (cpu_bytes_to_use=107374182400)
+            # for an at-parity comparison, and staying within the 140Gi pod limit.
+            # (Using 100 here meant 4x100=400 GB > 140Gi -> workers segfaulted while
+            # zeroing the CPU buffer during KV-cache registration.)
+            - name: LMCACHE_MAX_LOCAL_CPU_SIZE
+              value: "25"
+            - name: PYTHONHASHSEED
+              value: "123"
+          resources:
+            limits:
+              cpu: '8'
+              memory: 140Gi
+            requests:
+              cpu: '8'
+              memory: 140Gi
+            claims:
+              - name: intel-decode-claim

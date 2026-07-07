@@ -1,0 +1,70 @@
+# Intel B60 XPU shared-prefix workload for tiered-prefix-cache benchmarking.
+#
+# Topology: Qwen3-32B, TP4 x 2 replicas across all 8 B60s (each replica claims 4
+# GPUs via DRA and uses ZE_AFFINITY_MASK 0-3 over its own isolated render nodes).
+# The EPP prefix-routes requests across both replicas, so a given group's prefix
+# is sticky to one engine and each replica holds roughly half the groups.
+#
+# Drives enough distinct prefixes that each engine's KV working set exceeds its
+# VRAM, so the VRAM-only baseline must evict/recompute while the CPU-offload
+# (OffloadingConnector) variant keeps the prefixes resident in host RAM.
+#
+# Sizing rationale -- KV is 256 KiB/token for the full model (64 layers x 2 (K,V)
+# x 8 KV heads x 128 head_dim x 2 bytes bf16). TP4 shards the 8 KV heads to 2
+# per GPU, so each B60 stores 64 KiB/token of its KV slice, and all 4 ranks hold
+# the SAME token positions (different heads). Per engine (measured from vLLM):
+#   * Available KV cache memory = 4.14 GiB/GPU (gpu-mem-util 0.85 on 24GB minus
+#     ~16GB weights); aggregate 4x4.14 = 16.6 GiB per engine.
+#   * Resident KV capacity = 67,584 tokens/engine (vLLM "GPU KV cache size").
+#   * Prefix routing keeps ~60 groups on each engine: 60 x 3000 = 180K prefix
+#     tokens (~44GB KV), ~2.7x the 67.5K-token (16.6GB) per-engine VRAM budget.
+#     Because the per-engine working set far exceeds VRAM, the VRAM-only baseline
+#     must evict and RECOMPUTE prefixes on a miss (high TTFT), while the offload
+#     variant's 100GiB CPU KV buffer holds the full working set, so it hits and
+#     skips the recompute (low TTFT). The benefit therefore shows up as
+#     latency/throughput, NOT as failures.
+#   * GOAL: the baseline should serve ~100% of requests successfully. The rates
+#     below are the AGGREGATE fleet rate across 2 engines, so the per-engine rate
+#     is half (1/2/3/4 qps) -- matching the validated single-replica ramp. The
+#     opening (aggregate qps 2) stage is a warmup that primes both prefix caches
+#     before the measured 4/6/8 ramp.
+#
+# This file is the source of truth; run-xpu-benchmark.sh copies it into the
+# benchmark profiles dir (workload/profiles/inference-perf/) as a .yaml.in
+# template so the REPLACE_ENV_* tokens below are substituted with the runtime
+# endpoint URL and model name at render time.
+load:
+  type: poisson
+  interval: 60.0
+  stages:
+    - { rate: 4.0, duration: 60 }
+    - { rate: 6.0, duration: 60 }
+    - { rate: 8.0, duration: 60 }
+    - { rate: 10.0, duration: 60 }
+api:
+  type: completion
+  streaming: true
+server:
+  type: vllm
+  model_name: REPLACE_ENV_LLMDBENCH_DEPLOY_CURRENT_MODEL
+  base_url: REPLACE_ENV_LLMDBENCH_HARNESS_STACK_ENDPOINT_URL
+  ignore_eos: true
+tokenizer:
+  pretrained_model_name_or_path: REPLACE_ENV_LLMDBENCH_DEPLOY_CURRENT_MODEL
+data:
+  type: shared_prefix
+  shared_prefix:
+    num_groups: 120             # 120 distinct prefixes (~60 per replica via routing)
+    num_prompts_per_group: 5    # 5 unique questions per prefix
+    system_prompt_len: 3000     # 3K-token shared prefix per group
+    question_len: 256           # per-prompt question length
+    output_len: 256             # per-prompt generated length
+    enable_multi_turn_chat: false
+report:
+  request_lifecycle:
+    summary: true
+    per_stage: true
+    per_request: true
+storage:
+  local_storage:
+    path: /workspace

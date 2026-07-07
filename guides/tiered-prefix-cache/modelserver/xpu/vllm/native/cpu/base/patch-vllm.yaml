@@ -10,19 +10,34 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
+              source /opt/intel/oneapi/setvars.sh >/dev/null 2>&1 || true
               exec vllm serve \
-                Qwen/Qwen3-8B \
+                /localdisk/HF_CACHE/Qwen3-32B \
+                --served-model-name Qwen/Qwen3-32B \
                 --dtype bfloat16 \
                 --block-size 64 \
-                --tensor-parallel-size=1 \
+                --tensor-parallel-size=4 \
+                --gpu-memory-utilization 0.85 \
                 --kv-transfer-config \
-                '{"kv_connector":"OffloadingConnector","kv_role":"kv_both","kv_connector_extra_config":{"cpu_bytes_to_use":21474836480}}' \
-                --gpu-memory-utilization 0.35 \
+                '{"kv_connector":"OffloadingConnector","kv_role":"kv_both","kv_connector_extra_config":{"cpu_bytes_to_use":107374182400}}' \
                 --max-num-seq 128 \
                 --uvicorn-log-level warning
           env:
+            - name: ZE_AFFINITY_MASK
+              value: "0,1,2,3"
+            - name: HF_HOME
+              value: /localdisk/HF_CACHE
             - name: HF_TOKEN
               valueFrom:
                 secretKeyRef:
                   name: llm-d-hf-token
                   key: HF_TOKEN
+          resources:
+            limits:
+              cpu: '8'
+              memory: 140Gi
+            requests:
+              cpu: '8'
+              memory: 140Gi
+            claims:
+              - name: intel-decode-claim

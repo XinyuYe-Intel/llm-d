@@ -60,6 +60,9 @@ The tiers each path supports differ — see the table above. For example, the vL
 > [!NOTE]
 > A `gpt-oss-120b` variant (TP=1 on NVIDIA H100, 100 GB CPU offload) is also benchmarked — see [gpt-oss-120B benchmarking results](./benchmark-results/vllm-gpt-oss-120b-h100.md).
 
+> [!NOTE]
+> A larger `Qwen3-32B` XPU variant (TP=4 on 4× Intel B60, 100 GB CPU offload) is also benchmarked — see [Qwen3-32B B60 benchmarking results](./benchmark-results/vllm-qwen3-32b-b60-xpu.md).
+
 ---
 
 ## Prerequisites
@@ -444,4 +447,5 @@ Empirical benchmark reports demonstrating the impact of multi-tier prefix-cache 
 - **[Qwen/Qwen3-32B on vLLM (TPU v6e/v7 CPU Offload)](./benchmark-results/vllm-qwen3-32b-tpuv7.md)**: Headline throughput and latency effect of CPU RAM prefix offloading on Google TPU architectures.
 - **[Qwen/Qwen3-32B on vLLM (16×H100 Lustre Offload)](./benchmark-results/vllm-qwen3-32b-h100-lustre.md)**: Benchmark comparisons for shared POSIX filesystem offloading using LMCache and llm-d filesystem connectors.
 - **[Qwen/Qwen3-8B on vLLM (Intel B60 XPU CPU Offload)](./benchmark-results/vllm-qwen3-8b-b60-xpu.md)**: TTFT, end-to-end latency, and throughput gains from CPU RAM offloading on a single Intel B60 XPU under high cache pressure.
+- **[Qwen/Qwen3-32B on vLLM (4×Intel B60 XPU CPU Offload)](./benchmark-results/vllm-qwen3-32b-b60-xpu.md)**: Stage-by-stage TTFT, end-to-end latency, and throughput gains from CPU RAM offloading on a 4-way tensor-parallel Intel B60 XPU replica under high cache pressure.
 
