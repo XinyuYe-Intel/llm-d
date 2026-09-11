@@ -1,0 +1,257 @@
+results:
+  request_performance:
+    aggregate:
+      latency:
+        inter_token_latency:
+          max: 65.68604630499613
+          mean: 0.11667495529256498
+          min: 0.0
+          p0p1: 0.0
+          p1: 0.0
+          p10: 0.0
+          p25: 0.067367174255196
+          p5: 0.0
+          p50: 0.08014339953660965
+          p75: 0.09120472523500212
+          p90: 0.158578852948267
+          p95: 0.216629237314919
+          p99: 1.032766852696675
+          p99p9: 2.486217036863093
+          units: s/token
+        normalized_time_per_output_token:
+          max: 14.49883630856805
+          mean: 0.49939255867763893
+          min: 0.018837833699993294
+          p0p1: 0.03487595748627445
+          p1: 0.08746653720665563
+          p10: 0.09458170832734034
+          p25: 0.1396227440363873
+          p5: 0.0922470223422534
+          p50: 0.21282780065030238
+          p75: 0.3495253409714678
+          p90: 0.42166690476221635
+          p95: 0.5150766522524918
+          p99: 9.589597825207452
+          p99p9: 14.13221798247637
+          units: s/token
+        request_latency:
+          max: 132.73411402502097
+          mean: 61.3965157173443
+          min: 22.00139626103919
+          p0p1: 22.066790895395446
+          p1: 22.391433524903842
+          p10: 24.117398468963803
+          p25: 35.48075307480758
+          p5: 23.579047797364183
+          p50: 53.04513426346239
+          p75: 87.98678899827064
+          p90: 101.73410967346281
+          p95: 110.68371524556423
+          p99: 131.69755739623565
+          p99p9: 132.66337524236204
+          units: s
+        time_per_output_token:
+          max: 0.5598991333390586
+          mean: 0.1268807244416778
+          min: 0.009029328062762517
+          p0p1: 0.020351372982117734
+          p1: 0.06905877854208024
+          p10: 0.08412785271337876
+          p25: 0.09049165608277453
+          p5: 0.08227305475585893
+          p50: 0.10972123666844495
+          p75: 0.14240454030907987
+          p90: 0.17845328804607866
+          p95: 0.24396127444037383
+          p99: 0.3466057546061056
+          p99p9: 0.5094027063391038
+          units: s/token
+        time_to_first_token:
+          max: 82.48292099602986
+          mean: 29.483936312601145
+          min: 0.34512003406416625
+          p0p1: 0.35009139083395713
+          p1: 0.3677226269885432
+          p10: 0.9081841468228959
+          p25: 8.155994216765976
+          p5: 0.5913002488843631
+          p50: 24.164590118045453
+          p75: 44.3392316182144
+          p90: 65.14155159137445
+          p95: 74.3296164440806
+          p99: 79.23016378122614
+          p99p9: 82.44320859684761
+          units: s
+      requests:
+        failures: 0
+        input_length:
+          max: 4255.0
+          mean: 4255.0
+          min: 4255.0
+          p0p1: 4255.0
+          p1: 4255.0
+          p10: 4255.0
+          p25: 4255.0
+          p5: 4255.0
+          p50: 4255.0
+          p75: 4255.0
+          p90: 4255.0
+          p95: 4255.0
+          p99: 4255.0
+          p99p9: 4255.0
+          units: count
+        output_length:
+          max: 4510.0
+          mean: 263.1875
+          min: 2.0
+          p0p1: 2.239
+          p1: 7.0
+          p10: 254.0
+          p25: 255.0
+          p5: 248.40000000000006
+          p50: 256.0
+          p75: 256.0
+          p90: 256.0
+          p95: 256.0
+          p99: 256.0
+          p99p9: 3493.533000000102
+          units: count
+        total: 240
+      throughput:
+        input_token_rate:
+          mean: 5439.13577361703
+          units: tokens/s
+        output_token_rate:
+          mean: 336.4306807094788
+          units: tokens/s
+        request_rate:
+          mean: 1.278292778758409
+          units: queries/s
+        total_token_rate:
+          mean: 5775.566454326509
+          units: tokens/s
+run:
+  cid: bcea8a05-270e-538b-9aee-5963556916a6
+  description: inference-perf-1789023843-nmz1yh
+  eid: ca5a139a-9e81-5d72-8a5c-9e3c0899530e
+  pid: d0149cb9-d2a4-459a-b105-bd435e0489a8
+  time:
+    duration: PT1430.588399009S
+    end: '2026-09-10T07:33:21Z'
+    start: '2026-09-10T07:09:30Z'
+  uid: b74b4e9b-36d1-4632-bc60-1ddb96df0dfc
+  user: namespace=llm-d-tiered-prefix-cache
+scenario:
+  load:
+    metadata:
+      cfg_id: 2c4586d31f91e30f72eae8cc7c6603c95ab114aed4cdac93d4637a9d0bf9d844
+      schema_version: 0.0.1
+    native:
+      args:
+        workload: tpc_xpu_llama3-70b.yaml
+      config:
+        api:
+          streaming: true
+          type: completion
+        data:
+          shared_prefix:
+            enable_multi_turn_chat: false
+            num_groups: 216
+            num_prompts_per_group: 5
+            output_len: 256
+            question_len: 256
+            system_prompt_len: 4000
+          type: shared_prefix
+        load:
+          interval: 60.0
+          request_timeout: 1800.0
+          stages:
+          - duration: 60
+            rate: 1
+          - duration: 60
+            rate: 2
+          - duration: 60
+            rate: 3
+          - duration: 60
+            rate: 4
+          - duration: 60
+            rate: 5
+          - duration: 60
+            rate: 6
+          type: poisson
+        report:
+          request_lifecycle:
+            per_request: true
+            per_stage: true
+            summary: true
+        server:
+          base_url: http://10.233.35.113
+          ignore_eos: true
+          model_name: meta-llama/Meta-Llama-3-70B
+          type: vllm
+        storage:
+          local_storage:
+            path: /requests/inference-perf-1789023843-nmz1yh_1
+        tokenizer:
+          pretrained_model_name_or_path: meta-llama/Meta-Llama-3-70B
+    standardized:
+      input_seq_len:
+        distribution: gaussian
+        max: 4255
+        min: 4255
+        value: 4255.0
+      output_seq_len:
+        distribution: gaussian
+        max: 4510
+        min: 2
+        value: 263.1875
+      parallelism: 1
+      prefix:
+        num_groups: 216
+        num_prefixes: 1
+        num_users_per_group: 5
+        prefix_len:
+          distribution: fixed
+          value: 4000
+      rate_qps: 4.0
+      source: random
+      stage: 3
+      tool: inference-perf
+      tool_version: v0.6.1
+  stack:
+  - metadata:
+      cfg_id: 16c0d563b61c6a0a42e93b5b09a5994db4ab86017d1944d93c85c2dd9f95e420
+      label: ''
+      schema_version: 0.0.1
+    native:
+      args: {}
+      envars: {}
+    standardized:
+      accelerator:
+        count: 1
+        model: ''
+        parallelism:
+          dp: 1
+          dp_local: 1
+          ep: 1
+          pp: 1
+          tp: 1
+          workers: 1
+      kind: inference_engine
+      model:
+        name: meta-llama/Meta-Llama-3-70B
+      replicas: 1
+      role: decode
+      tool: ''
+      tool_version: '//:'
+  - metadata:
+      cfg_id: 44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a
+      label: Inference Scheduler (EPP)
+      schema_version: 0.0.1
+    native:
+      config: {}
+    standardized:
+      kind: generic
+      tool: inference_scheduler
+      tool_version: ''
+version: '0.2'
