@@ -222,10 +222,9 @@ def main():
       "lists all metrics as rows. **Bold** marks the best config for that metric "
       "row (higher = better for throughput/req-rate, lower = better for the latency "
       "rows). Each offload column also shows its **% change vs baseline** in "
-      "parentheses — for the throughput/req-rate rows positive is better, and for "
-      "the latency rows negative is better. The percentage is coloured "
-      "<span style=\"color:#d00000\">red when it is an improvement over baseline</span> "
-      "and <span style=\"color:#008000\">green when it is worse</span>.\n")
+      "parentheses, followed by a direction-aware marker: ▲ = better than baseline, "
+      "▼ = worse than baseline (for the latency rows a lower value counts as "
+      "better, so a negative % is marked ▲).\n")
     clean_sets = {}
     for m in MODELS:
         common = set(data[m][CONFIGS[0]])
@@ -268,10 +267,10 @@ def main():
                         d = (vals[c] - base_val) / base_val * 100.0
                         sign = "+" if d >= 0 else "\u2212"
                         pct = f"({sign}{abs(d):.1f}%)"
-                        improved = (d > 0) if direction == "max" else (d < 0)
                         if d != 0:
-                            color = "#d00000" if improved else "#008000"
-                            pct = f'<span style="color:{color}">{pct}</span>'
+                            improved = (d > 0) if direction == "max" else (d < 0)
+                            marker = "\u25b2" if improved else "\u25bc"
+                            pct = f"{pct} {marker}"
                         txt += f" {pct}"
                     cells.append(txt)
                 qcol = f"**{q:g}**" if i == 0 else ""

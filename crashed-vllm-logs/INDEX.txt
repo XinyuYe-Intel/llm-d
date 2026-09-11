@@ -1,0 +1,28 @@
+tpc-70b-baseline-rerun-20260910-113744/llama3-70b-baseline/vllm-logs/xpu-vllm-decode-59d89d6d9b-5rqn9.previous.log	EngineCore encountered a fatal error.
+tpc-70b-baseline-rerun-20260910-113744/llama3-70b-baseline/vllm-logs/xpu-vllm-decode-59d89d6d9b-bq75d.previous.log	EngineCore encountered a fatal error.
+tpc-xpu-full-20260903-175839/llama3-70b-baseline/vllm-logs/xpu-vllm-decode-5c5f5bd89b-b8mrf.previous.log	(restart artifact / .previous.log — no in-log fatal trace)
+tpc-xpu-full-20260903-175839/llama3-70b-baseline/vllm-logs/xpu-vllm-decode-5c5f5bd89b-ljtsw.previous.log	(restart artifact / .previous.log — no in-log fatal trace)
+tpc-xpu-full-20260903-175839/llama3-70b-baseline/vllm-logs/xpu-vllm-decode-5c5f5bd89b-mmwt6.previous.log	(restart artifact / .previous.log — no in-log fatal trace)
+tpc-xpu-full-20260903-175839/llama3-70b-baseline/vllm-logs/xpu-vllm-decode-5c5f5bd89b-w88mf.previous.log	(restart artifact / .previous.log — no in-log fatal trace)
+tpc-xpu-full-20260904-014246/llama3-70b-baseline/vllm-logs/xpu-vllm-decode-5c5f5bd89b-7jgkk.previous.log	(restart artifact / .previous.log — no in-log fatal trace)
+tpc-xpu-full-20260904-014246/llama3-70b-baseline/vllm-logs/xpu-vllm-decode-5c5f5bd89b-94td7.previous.log	(restart artifact / .previous.log — no in-log fatal trace)
+tpc-xpu-full-20260904-014246/llama3-70b-baseline/vllm-logs/xpu-vllm-decode-5c5f5bd89b-9jcwv.previous.log	(restart artifact / .previous.log — no in-log fatal trace)
+tpc-xpu-full-20260904-014246/llama3-70b-baseline/vllm-logs/xpu-vllm-decode-5c5f5bd89b-z7f9h.previous.log	(restart artifact / .previous.log — no in-log fatal trace)
+tpc-xpu-rate-20260907-073105/llama3-70b-native-cpu/vllm-logs/xpu-vllm-decode-59577cd478-5rnht.previous.log	(restart artifact / .previous.log — no in-log fatal trace)
+tpc-xpu-rate-20260907-073105/llama3-70b-native-cpu/vllm-logs/xpu-vllm-decode-59577cd478-zfbj6.previous.log	(restart artifact / .previous.log — no in-log fatal trace)
+tpc-xpu-rate-20260907-073105/llama3-70b-native-fs/vllm-logs/xpu-vllm-decode-67c74bd459-6wrww.previous.log	(restart artifact / .previous.log — no in-log fatal trace)
+tpc-xpu-rate-20260907-073105/llama3-70b-native-fs/vllm-logs/xpu-vllm-decode-67c74bd459-mqxb9.previous.log	(restart artifact / .previous.log — no in-log fatal trace)
+tpc-xpu-rate-32b-nativefs-rerun-20260909-041142/qwen3-32b-native-fs/vllm-logs/xpu-vllm-decode-687f4b6767-nxxrt.previous.log	(restart artifact / .previous.log — no in-log fatal trace)
+tpc-xpu-rate-32b-nativefs-rerun-20260909-041142/qwen3-32b-native-fs/vllm-logs/xpu-vllm-decode-687f4b6767-xhmm8.previous.log	(restart artifact / .previous.log — no in-log fatal trace)
+tpc-xpu-rate-32xpu-20260908-010405/llama3-70b-baseline/vllm-logs/xpu-vllm-decode-59d89d6d9b-gzbwt.previous.log	EngineCore encountered a fatal error.
+tpc-xpu-rate-32xpu-20260908-010405/qwen3-32b-native-fs/vllm-logs/xpu-vllm-decode-687f4b6767-7rdbk.previous.log	EngineCore encountered a fatal error.
+tpc-xpu-rate-32xpu-20260908-010405/qwen3-32b-native-fs/vllm-logs/xpu-vllm-decode-687f4b6767-952xg.previous.log	EngineCore encountered a fatal error.
+tpc-xpu-rate-32xpu-20260908-010405/qwen3-32b-native-fs/vllm-logs/xpu-vllm-decode-687f4b6767-g5ffw.previous.log	EngineCore encountered a fatal error.
+tpc-xpu-rate-32xpu-20260908-010405/qwen3-32b-native-fs/vllm-logs/xpu-vllm-decode-687f4b6767-j6wt7.previous.log	EngineCore encountered a fatal error.
+tpc-xpu-rate-32xpu-20260908-010405/qwen3-32b-native-fs/vllm-logs/xpu-vllm-decode-687f4b6767-vxp4x.previous.log	EngineCore encountered a fatal error.
+tpc-xpu-rate-32xpu-20260908-010405/qwen3-32b-native-fs/vllm-logs/xpu-vllm-decode-687f4b6767-zpwgl.previous.log	EngineCore encountered a fatal error.
+tpc-xpu-rate-32xpu-20260908-030654/llama3-70b-native-fs/vllm-logs/xpu-vllm-decode-5c477d4c7f-qvsvc.previous.log	EngineCore encountered a fatal error.
+tpc-xpu-rate-70b-baseline-rerun-20260909-041142/llama3-70b-baseline/vllm-logs/xpu-vllm-decode-59d89d6d9b-md884.previous.log	EngineCore encountered a fatal error.
+tpc-xpu-rate-70b-nativefs-rerun-20260910-023913/llama3-70b-native-fs/vllm-logs/xpu-vllm-decode-5c477d4c7f-2hvld.previous.log	(restart artifact / .previous.log — no in-log fatal trace)
+tpc-xpu-rate-local-32b-70b-20260908-083707/llama3-70b-baseline/vllm-logs/xpu-vllm-decode-59d89d6d9b-kmbj5.previous.log	(restart artifact / .previous.log — no in-log fatal trace)
+tpc-xpu-valid-20260907-022027/qwen3-32b-baseline/vllm-logs/xpu-vllm-decode-cb967689f-fxf9q.previous.log	EngineCore encountered a fatal error.
